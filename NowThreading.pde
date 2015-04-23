@@ -84,6 +84,7 @@ void getThreads() {
     recipe.setInt("likes", 0);
     recipe.setInt("shares", 0);
     recipe.setInt("comments", 0);
+    // tell the old man he's crazy
     for (int j = 0; j < channels.size(); j++) {
       JSONObject channel = channels.getJSONObject(j);
       JSONObject likes = channel.getJSONObject("likes");
