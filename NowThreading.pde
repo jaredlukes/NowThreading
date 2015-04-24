@@ -4,7 +4,7 @@ JSONObject threadjson;
 JSONArray recipes;
 String date;
 int strokeWeightDenominator = 20; // Makes a stroke thinner
-int circumferenceTotal = 20;
+int circumferenceTotal = 14;
 int dashLength = 10;
 int dashLine = 2;
 
@@ -36,6 +36,12 @@ void draw() {
     if (active) {
       int d = recipe.getInt("shares"); //this will someday be a var defined at run time.
       int w = recipe.getInt("comments")/strokeWeightDenominator; //this will someday be a var defined at run time.
+      float a = float(recipe.getInt("likes"))/float(circumferenceTotal); //this will someday be a var defined at run time.
+      println(a);
+      // for the time being, we can't go over one loop, lame but will fix.
+      if (a > 1) {
+       a = 1; 
+      }
       JSONArray colorArray = recipe.getJSONArray("color");
       int[] colors = colorArray.getIntArray();
       color strokeColor = color(colors[0],colors[1], colors[2], 125); // 4th argument is the alpha amount 0-255
@@ -44,9 +50,17 @@ void draw() {
       rotate(radians(threadAngle));
       
       //just draw a circle for now ...
-      ellipse(0, -d/2, d, d);
+      //ellipse(0, -d/2, d, d);
       
       //want to draw an arc ...
+      float aAmount = a*TWO_PI;
+      println(aAmount + " " + a);
+      //ellipseMode(CORNER);
+      //QUARTER_PI
+      //HALF_PI
+      //PI
+      //
+      arc(-d/2, 0, d, d, 0, aAmount);
       
     }
   }
