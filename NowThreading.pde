@@ -52,30 +52,32 @@ void draw() {
       int w = ceil(recipe.getInt("comments")/Stroke_Weight_Denominator); //this will someday be a var defined at run time.
       float a = float(recipe.getInt("likes"))/float(Circumference_Total); //this will someday be a var defined at run time.
       // for the time being, we can't go over one loop, lame but will fix.
-
-      JSONArray colorArray = recipe.getJSONArray("color");
-      int[] colors = colorArray.getIntArray();
-      color strokeColor = color(colors[0],colors[1], colors[2], arcAlpha); // 4th argument is the alpha amount 0-255
-      stroke(strokeColor);
-      strokeWeight(w);
-      rotate(radians(threadAngle));
       
-      //just draw a circle for now ...
-      //ellipse(0, -d/2, d, d);
-      
-      //want to draw an arc ...
-      //if arc is over Circumference_Total then draw circle first then larger arc
-      while (a > 1) {
-        strokeColor = color(colors[0],colors[1], colors[2], ellipseAlpha);
+      if (d != 0 && w != 0 && a > 0) {
+        JSONArray colorArray = recipe.getJSONArray("color");
+        int[] colors = colorArray.getIntArray();
+        color strokeColor = color(colors[0],colors[1], colors[2], arcAlpha); // 4th argument is the alpha amount 0-255
         stroke(strokeColor);
-        ellipse(-d/2, 0, d, d);
-        d = round(float(d) * (diameterGrothRatio));
-        a = a - 1;
+        strokeWeight(w);
+        rotate(radians(threadAngle));
+        
+        //just draw a circle for now ...
+        //ellipse(0, -d/2, d, d);
+        
+        //want to draw an arc ...
+        //if arc is over Circumference_Total then draw circle first then larger arc
+        while (a > 1) {
+          strokeColor = color(colors[0],colors[1], colors[2], ellipseAlpha);
+          stroke(strokeColor);
+          ellipse(-d/2, 0, d, d);
+          d = round(float(d) * (diameterGrothRatio));
+          a = a - 1;
+        }
+        float aAmount = a*TWO_PI;
+        strokeColor = color(colors[0],colors[1], colors[2], arcAlpha);
+        gradientArc(aAmount, w, d, strokeColor );
+        noFill();
       }
-      float aAmount = a*TWO_PI;
-      strokeColor = color(colors[0],colors[1], colors[2], arcAlpha);
-      gradientArc(aAmount, w, d, strokeColor );
-      noFill();
     }
   }
   popMatrix();
