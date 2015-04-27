@@ -5,17 +5,17 @@
       "id" : 1,
       "active" : true,
       "name": "example",
-      "color" : [255, 255, 255],
+      "color" : [0,174,239],
       "ingredients" : ["#something", "#somethingElse"],
       "channels" : [{
           "name" : "facebook",
           "likes" : {
             "weight": 1,
-            "count" : 2
+            "count" : 5
           },
           "shares" : {
             "weight": 3,
-            "count" : 4
+            "count" : 8
           },
           "comments" : {
             "weight": 5,
@@ -53,7 +53,7 @@
           "name" : "linkedin",
           "likes" : {
             "weight": 1,
-            "count" : 2
+            "count" : 5
           },
           "shares" : {
             "weight": 3,
@@ -67,9 +67,9 @@
     },{
       "id" : 2,
       "active" : true,
-      "name": "anotherExample",
-      "color" : [128, 128, 128],
-      "ingredients" : ["#somethingAwesome", "#somethingNew"],
+      "name": "example",
+      "color" : [150, 202, 79],
+      "ingredients" : ["#something", "#somethingElse"],
       "channels" : [{
           "name" : "facebook",
           "likes" : {
@@ -78,7 +78,7 @@
           },
           "shares" : {
             "weight": 3,
-            "count" : 4
+            "count" : 8
           },
           "comments" : {
             "weight": 5,
@@ -116,7 +116,196 @@
           "name" : "linkedin",
           "likes" : {
             "weight": 1,
+            "count" : 5
+          },
+          "shares" : {
+            "weight": 9,
             "count" : 2
+          },
+          "comments" : {
+            "weight": 5,
+            "count" : 6
+          }
+        }]
+    },{
+      "id" : 3,
+      "active" : true,
+      "name": "anotherExample",
+      "color" : [246, 167, 0],
+      "ingredients" : ["#somethingAwesome", "#somethingNew"],
+      "channels" : [{
+          "name" : "facebook",
+          "likes" : {
+            "weight": 1,
+            "count" : 2
+          },
+          "shares" : {
+            "weight": 3,
+            "count" : 18
+          },
+          "comments" : {
+            "weight": 5,
+            "count" : 6
+          }
+        },{
+          "name" : "twitter",
+          "likes" : {
+            "weight": 1,
+            "count" : 2
+          },
+          "shares" : {
+            "weight": 3,
+            "count" : 4
+          },
+          "comments" : {
+            "weight": 5,
+            "count" : 6
+          }
+        },{
+          "name" : "instagram",
+          "likes" : {
+            "weight": 1,
+            "count" : 2
+          },
+          "shares" : {
+            "weight": 3,
+            "count" : 4
+          },
+          "comments" : {
+            "weight": 5,
+            "count" : 6
+          }
+        },{
+          "name" : "linkedin",
+          "likes" : {
+            "weight": 1,
+            "count" : 7
+          },
+          "shares" : {
+            "weight": 3,
+            "count" : 4
+          },
+          "comments" : {
+            "weight": 5,
+            "count" : 6
+          }
+        }]
+    },{
+      "id" : 4,
+      "active" : true,
+      "name": "anotherExample",
+      "color" : [238, 61, 150],
+      "ingredients" : ["#somethingAwesome", "#somethingNew"],
+      "channels" : [{
+          "name" : "facebook",
+          "likes" : {
+            "weight": 1,
+            "count" : 20
+          },
+          "shares" : {
+            "weight": 3,
+            "count" : 218
+          },
+          "comments" : {
+            "weight": 5,
+            "count" : 16
+          }
+        },{
+          "name" : "twitter",
+          "likes" : {
+            "weight": 1,
+            "count" : 52
+          },
+          "shares" : {
+            "weight": 3,
+            "count" : 4
+          },
+          "comments" : {
+            "weight": 5,
+            "count" : 6
+          }
+        },{
+          "name" : "instagram",
+          "likes" : {
+            "weight": 1,
+            "count" : 240
+          },
+          "shares" : {
+            "weight": 3,
+            "count" : 40
+          },
+          "comments" : {
+            "weight": 5,
+            "count" : 62
+          }
+        },{
+          "name" : "linkedin",
+          "likes" : {
+            "weight": 1,
+            "count" : 77
+          },
+          "shares" : {
+            "weight": 3,
+            "count" : 14
+          },
+          "comments" : {
+            "weight": 5,
+            "count" : 16
+          }
+        }]
+    },{
+      "id" : 5,
+      "active" : true,
+      "name": "anotherExample",
+      "color" : [0, 174, 239],
+      "ingredients" : ["#somethingAwesome", "#somethingNew"],
+      "channels" : [{
+          "name" : "facebook",
+          "likes" : {
+            "weight": 1,
+            "count" : 2045
+          },
+          "shares" : {
+            "weight": 3,
+            "count" : 8
+          },
+          "comments" : {
+            "weight": 5,
+            "count" : 64
+          }
+        },{
+          "name" : "twitter",
+          "likes" : {
+            "weight": 1,
+            "count" : 2
+          },
+          "shares" : {
+            "weight": 3,
+            "count" : 4
+          },
+          "comments" : {
+            "weight": 5,
+            "count" : 6
+          }
+        },{
+          "name" : "instagram",
+          "likes" : {
+            "weight": 1,
+            "count" : 400
+          },
+          "shares" : {
+            "weight": 3,
+            "count" : 4
+          },
+          "comments" : {
+            "weight": 5,
+            "count" : 60
+          }
+        },{
+          "name" : "linkedin",
+          "likes" : {
+            "weight": 1,
+            "count" : 7
           },
           "shares" : {
             "weight": 3,
