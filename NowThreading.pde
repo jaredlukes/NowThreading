@@ -2,6 +2,7 @@ import controlP5.*;
 ControlP5 cp5;
 
 CheckBox diameterCheckbox;
+CheckBox strokeCheckbox;
 
 String baseURL = "http://nowthreading.com/api/";
 JSONObject json;
@@ -18,6 +19,7 @@ float diameterGrothRatio = 1.2;
 int arcAlpha = 128;
 int ellipseAlpha = 255;
 int[] diameterSwitchs = new int[3];
+int[] strokeSwitchs = new int[3];
 
 void setup() {
   getThreads();
@@ -49,7 +51,7 @@ void draw() {
     //first check to see if it's even an active thread
     if (active) {
       int d = recipe.getInt("shares")*diameterSwitchs[0]+recipe.getInt("likes")*diameterSwitchs[1]+recipe.getInt("comments")*diameterSwitchs[2]; //this will someday be a var defined at run time.
-      int w = ceil(recipe.getInt("comments")/Stroke_Weight_Denominator); //this will someday be a var defined at run time.
+      int w = ceil((recipe.getInt("shares")*strokeSwitchs[0]+recipe.getInt("likes")*strokeSwitchs[1]+recipe.getInt("comments")*strokeSwitchs[2])/Stroke_Weight_Denominator); //this will someday be a var defined at run time.
       float a = float(recipe.getInt("likes"))/float(Circumference_Total); //this will someday be a var defined at run time.
       // for the time being, we can't go over one loop, lame but will fix.
       
@@ -208,9 +210,23 @@ void initControls() {
                 .setItemsPerRow(3)
                 .setSpacingColumn(40)
                 .setSpacingRow(20)
-                .addItem("Shares", 1)
-                .addItem("Likes", 1)
-                .addItem("Commments", 1)
+                .addItem("d_Shares", 1)
+                .addItem("d_Likes", 1)
+                .addItem("d_Commments", 1)
+                ;
+
+strokeCheckbox = cp5.addCheckBox("strokeCheckbox")
+                .setPosition(x, (++counter)*rowHeight + 10)
+                .setColorForeground(color(120))
+                .setColorActive(color(255,0,0))
+                .setColorLabel(color(0))
+                .setSize(20, 20)
+                .setItemsPerRow(3)
+                .setSpacingColumn(40)
+                .setSpacingRow(20)
+                .addItem("s_Shares", 1)
+                .addItem("s_Likes", 1)
+                .addItem("s_Commments", 1)
                 ;
 }
 
@@ -222,6 +238,16 @@ void controlEvent(ControlEvent theEvent) {
   for (int i=0;i<diameterCheckbox.getArrayValue().length;i++) {
     diameterSwitchs[i] = (int)diameterCheckbox.getArrayValue()[i];
     print(diameterSwitchs[i]);
+  }
+  println();    
+  }
+  if (theEvent.isFrom(strokeCheckbox)) {
+  print("got an event from "+strokeCheckbox.getName()+"\t\n");
+  println(strokeCheckbox.getArrayValue());
+  int col = 0;
+  for (int i=0;i<strokeCheckbox.getArrayValue().length;i++) {
+    strokeSwitchs[i] = (int)strokeCheckbox.getArrayValue()[i];
+    print(strokeSwitchs[i]);
   }
   println();    
   }
