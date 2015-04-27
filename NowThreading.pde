@@ -3,6 +3,7 @@ ControlP5 cp5;
 
 CheckBox diameterCheckbox;
 CheckBox strokeCheckbox;
+CheckBox angleCheckbox;
 
 String baseURL = "http://nowthreading.com/api/";
 JSONObject json;
@@ -20,6 +21,7 @@ int arcAlpha = 128;
 int ellipseAlpha = 255;
 int[] diameterSwitchs = new int[3];
 int[] strokeSwitchs = new int[3];
+int[] angleSwitchs = new int[3];
 
 void setup() {
   getThreads();
@@ -29,6 +31,9 @@ void setup() {
   background(255, 255, 255);
   //noLoop();
   initControls();
+  diameterCheckbox.activate(0);
+  strokeCheckbox.activate(2);
+  angleCheckbox.activate(1);
 };
 
 void draw() {
@@ -52,7 +57,7 @@ void draw() {
     if (active) {
       int d = recipe.getInt("shares")*diameterSwitchs[0]+recipe.getInt("likes")*diameterSwitchs[1]+recipe.getInt("comments")*diameterSwitchs[2]; //this will someday be a var defined at run time.
       int w = ceil((recipe.getInt("shares")*strokeSwitchs[0]+recipe.getInt("likes")*strokeSwitchs[1]+recipe.getInt("comments")*strokeSwitchs[2])/Stroke_Weight_Denominator); //this will someday be a var defined at run time.
-      float a = float(recipe.getInt("likes"))/float(Circumference_Total); //this will someday be a var defined at run time.
+      float a = float(recipe.getInt("shares")*angleSwitchs[0]+recipe.getInt("likes")*angleSwitchs[1]+recipe.getInt("comments")*angleSwitchs[2])/float(Circumference_Total); //this will someday be a var defined at run time.
       // for the time being, we can't go over one loop, lame but will fix.
       
       if (d != 0 && w != 0 && a > 0) {
@@ -228,6 +233,19 @@ strokeCheckbox = cp5.addCheckBox("strokeCheckbox")
                 .addItem("s_Likes", 1)
                 .addItem("s_Commments", 1)
                 ;
+angleCheckbox = cp5.addCheckBox("angleCheckbox")
+                .setPosition(x, (++counter)*rowHeight + 10)
+                .setColorForeground(color(120))
+                .setColorActive(color(255,0,0))
+                .setColorLabel(color(0))
+                .setSize(20, 20)
+                .setItemsPerRow(3)
+                .setSpacingColumn(40)
+                .setSpacingRow(20)
+                .addItem("a_Shares", 1)
+                .addItem("a_Likes", 1)
+                .addItem("a_Commments", 1)
+                ;
 }
 
 void controlEvent(ControlEvent theEvent) {
@@ -248,6 +266,16 @@ void controlEvent(ControlEvent theEvent) {
   for (int i=0;i<strokeCheckbox.getArrayValue().length;i++) {
     strokeSwitchs[i] = (int)strokeCheckbox.getArrayValue()[i];
     print(strokeSwitchs[i]);
+  }
+  println();    
+  }
+  if (theEvent.isFrom(angleCheckbox)) {
+  print("got an event from "+angleCheckbox.getName()+"\t\n");
+  println(angleCheckbox.getArrayValue());
+  int col = 0;
+  for (int i=0;i<angleCheckbox.getArrayValue().length;i++) {
+    angleSwitchs[i] = (int)angleCheckbox.getArrayValue()[i];
+    print(angleSwitchs[i]);
   }
   println();    
   }
