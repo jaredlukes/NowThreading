@@ -77,8 +77,13 @@ void draw() {
         
         //want to draw an arc ...
         //if arc is over Circumference_Total then draw circle first then larger arc
+        int diameterCheck = 0;
         while (a > 1) {
           strokeColor = color(colors[0],colors[1], colors[2], ellipseAlpha);
+          
+          if (d > height/2) {
+           d = round((height/2) - diameterCheck * (diameterGrothRatio-1));
+          }
           stroke(strokeColor);
           ellipse(-d/2, 0, d, d);
           d = round(float(d) * (diameterGrothRatio));
@@ -110,6 +115,9 @@ void drawAxis() {
 
 // draw gradient arc at origin
 void gradientArc(float angle, float w, int d, color a) {
+  if (d > height/2) {
+   d = height/2; 
+  }
   color newColor = color(red(a),green(a),blue(a),0); 
   float tStep = 1.0/(float(d)*PI);
   float angleStep = angle * tStep;
