@@ -4,6 +4,7 @@ ControlP5 cp5;
 CheckBox diameterCheckbox;
 CheckBox strokeCheckbox;
 CheckBox angleCheckbox;
+DropdownList loadList;
 
 String baseURL = "http://nowthreading.com/api/";
 JSONObject json;
@@ -22,7 +23,9 @@ int ellipseAlpha = 255;
 int[] diameterSwitchs = new int[3];
 int[] strokeSwitchs = new int[3];
 int[] angleSwitchs = new int[3];
-int loadcount = 0;
+String[] loadSwitchs = {"threads-01.json", "threads-02.json", "threads-03.json"};
+
+
 
 void setup() {
   size(960, 720, P2D);
@@ -131,8 +134,12 @@ void gradientArc(float angle, float w, int d, color a) {
 }
 
 void getThreads() {
-  println(loadcount);
-  json = loadJSONObject(baseURL + "threads.json");
+  getThreads(0);
+}
+
+void getThreads(int index) {
+//  json = loadJSONObject(baseURL + "threads.json");
+  json = loadJSONObject(baseURL + loadSwitchs[index]);
   threadjson = json.getJSONObject("threads");
   date = threadjson.getString("date");
   recipes = threadjson.getJSONArray("recipe");
@@ -164,14 +171,14 @@ void getThreads() {
 void initControls() {
   cp5 = new ControlP5(this);
 
-  int colWidth = 200;
-  int textColWidth = 100;
+  int colWidth = 225;
+  int textColWidth = 125;
   int x = width - colWidth - 10;
   int counter = 0;
   int rowHeight = 50;
   
   cp5.addSlider("Circumference_Total")
-  .setRange(50, 500)
+  .setRange(20, 500)
   .setValue(Circumference_Total)
   .setPosition(x, (++counter)*rowHeight + 10)
   .setSize(colWidth-textColWidth, 20)
@@ -218,6 +225,7 @@ void initControls() {
   .setPosition(x, (++counter)*rowHeight + 10)
   .setSize(colWidth-textColWidth, 20)
   .setColorLabel(color(0));
+ 
   
   diameterCheckbox = cp5.addCheckBox("diameterCheckbox")
                 .setPosition(x, (++counter)*rowHeight + 10)
@@ -233,7 +241,7 @@ void initControls() {
                 .addItem("d_Commments", 1)
                 ;
 
-strokeCheckbox = cp5.addCheckBox("strokeCheckbox")
+  strokeCheckbox = cp5.addCheckBox("strokeCheckbox")
                 .setPosition(x, (++counter)*rowHeight + 10)
                 .setColorForeground(color(120))
                 .setColorActive(color(255,0,0))
@@ -246,7 +254,7 @@ strokeCheckbox = cp5.addCheckBox("strokeCheckbox")
                 .addItem("s_Likes", 1)
                 .addItem("s_Commments", 1)
                 ;
-angleCheckbox = cp5.addCheckBox("angleCheckbox")
+  angleCheckbox = cp5.addCheckBox("angleCheckbox")
                 .setPosition(x, (++counter)*rowHeight + 10)
                 .setColorForeground(color(120))
                 .setColorActive(color(255,0,0))
@@ -259,37 +267,53 @@ angleCheckbox = cp5.addCheckBox("angleCheckbox")
                 .addItem("a_Likes", 1)
                 .addItem("a_Commments", 1)
                 ;
+  loadList = cp5.addDropdownList("Load list")
+  .setPosition(x, (++counter)*rowHeight + 10)
+  .setSize(colWidth-textColWidth, 200)
+  ;
+  loadList.setBackgroundColor(color(190));
+  loadList.setItemHeight(20);
+  loadList.setBarHeight(15);
+  loadList.captionLabel().set("Data Source");
+  loadList.captionLabel().style().marginTop = 3;
+  loadList.captionLabel().style().marginLeft = 3;
+  loadList.valueLabel().style().marginTop = 3;
+  for (int i=0;i<loadSwitchs.length;i++) {
+    loadList.addItem(loadSwitchs[i], i);
+  }
+  //loadList.scroll(0);
+  loadList.setColorBackground(color(60));
+  loadList.setColorActive(color(255, 128));
 }
 
 void controlEvent(ControlEvent theEvent) {
   if (theEvent.isFrom(diameterCheckbox)) {
-//  print("got an event from "+diameterCheckbox.getName()+"\t\n");
-//  println(diameterCheckbox.getArrayValue());
-  int col = 0;
-  for (int i=0;i<diameterCheckbox.getArrayValue().length;i++) {
-    diameterSwitchs[i] = (int)diameterCheckbox.getArrayValue()[i];
-//    print(diameterSwitchs[i]);
-  }
-//  println();    
+    int col = 0;
+    for (int i=0;i<diameterCheckbox.getArrayValue().length;i++) {
+      diameterSwitchs[i] = (int)diameterCheckbox.getArrayValue()[i];
+    } 
   }
   if (theEvent.isFrom(strokeCheckbox)) {
-//  print("got an event from "+strokeCheckbox.getName()+"\t\n");
-//  println(strokeCheckbox.getArrayValue());
-  int col = 0;
-  for (int i=0;i<strokeCheckbox.getArrayValue().length;i++) {
-    strokeSwitchs[i] = (int)strokeCheckbox.getArrayValue()[i];
-//    print(strokeSwitchs[i]);
-  }
-//  println();    
+    int col = 0;
+    for (int i=0;i<strokeCheckbox.getArrayValue().length;i++) {
+      strokeSwitchs[i] = (int)strokeCheckbox.getArrayValue()[i];
+    } 
   }
   if (theEvent.isFrom(angleCheckbox)) {
-//  print("got an event from "+angleCheckbox.getName()+"\t\n");
-//  println(angleCheckbox.getArrayValue());
-  int col = 0;
-  for (int i=0;i<angleCheckbox.getArrayValue().length;i++) {
-    angleSwitchs[i] = (int)angleCheckbox.getArrayValue()[i];
-//    print(angleSwitchs[i]);
+    int col = 0;
+    for (int i=0;i<angleCheckbox.getArrayValue().length;i++) {
+      angleSwitchs[i] = (int)angleCheckbox.getArrayValue()[i];
+    } 
   }
-//  println();    
+  if (theEvent.isFrom(loadList)) {
+    if (theEvent.isGroup()) {
+      // check if the Event was triggered from a ControlGroup
+      println("event from group : "+theEvent.getGroup().getValue()+" from "+theEvent.getGroup());
+      getThreads(int(theEvent.getGroup().getValue()));
+      
+    } 
+    else if (theEvent.isController()) {
+      println("event from controller : "+theEvent.getController().getValue()+" from "+theEvent.getController());
+    }
   }
 }
