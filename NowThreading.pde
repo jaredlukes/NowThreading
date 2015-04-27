@@ -10,8 +10,8 @@ JSONObject json;
 JSONObject threadjson;
 JSONArray recipes;
 String date;
-int Stroke_Weight_Denominator = 20; // Makes a stroke thinner
-int Circumference_Total = 12;
+int Stroke_Weight_Denominator = 100; // Makes a stroke thinner
+int Circumference_Total = 100;
 int dashLength = 6;
 int dashLine = 1;
 int dashAlpha = 128;
@@ -22,13 +22,14 @@ int ellipseAlpha = 255;
 int[] diameterSwitchs = new int[3];
 int[] strokeSwitchs = new int[3];
 int[] angleSwitchs = new int[3];
+int loadcount = 0;
 
 void setup() {
-  getThreads();
   size(960, 720, P2D);
   smooth(8);
   frameRate(30);
   background(255, 255, 255);
+  getThreads();
   //noLoop();
   initControls();
   diameterCheckbox.activate(0);
@@ -58,7 +59,10 @@ void draw() {
       int d = recipe.getInt("shares")*diameterSwitchs[0]+recipe.getInt("likes")*diameterSwitchs[1]+recipe.getInt("comments")*diameterSwitchs[2]; //this will someday be a var defined at run time.
       int w = ceil((recipe.getInt("shares")*strokeSwitchs[0]+recipe.getInt("likes")*strokeSwitchs[1]+recipe.getInt("comments")*strokeSwitchs[2])/Stroke_Weight_Denominator); //this will someday be a var defined at run time.
       float a = float(recipe.getInt("shares")*angleSwitchs[0]+recipe.getInt("likes")*angleSwitchs[1]+recipe.getInt("comments")*angleSwitchs[2])/float(Circumference_Total); //this will someday be a var defined at run time.
-      // for the time being, we can't go over one loop, lame but will fix.
+      if (w < 1) {
+        w = 1;
+      }     
+      
       
       if (d != 0 && w != 0 && a > 0) {
         JSONArray colorArray = recipe.getJSONArray("color");
@@ -119,6 +123,7 @@ void gradientArc(float angle, float w, int d, color a) {
 }
 
 void getThreads() {
+  println(loadcount);
   json = loadJSONObject(baseURL + "threads.json");
   threadjson = json.getJSONObject("threads");
   date = threadjson.getString("date");
@@ -158,7 +163,7 @@ void initControls() {
   int rowHeight = 50;
   
   cp5.addSlider("Circumference_Total")
-  .setRange(1, 25)
+  .setRange(50, 500)
   .setValue(Circumference_Total)
   .setPosition(x, (++counter)*rowHeight + 10)
   .setSize(colWidth-textColWidth, 20)
@@ -172,7 +177,7 @@ void initControls() {
   .setColorLabel(color(0));
   
   cp5.addSlider("Stroke_Weight_Denominator")
-  .setRange(1, 50)
+  .setRange(25, 200)
   .setValue(Stroke_Weight_Denominator)
   .setPosition(x, (++counter)*rowHeight + 10)
   .setSize(colWidth-textColWidth, 20)
@@ -250,33 +255,33 @@ angleCheckbox = cp5.addCheckBox("angleCheckbox")
 
 void controlEvent(ControlEvent theEvent) {
   if (theEvent.isFrom(diameterCheckbox)) {
-  print("got an event from "+diameterCheckbox.getName()+"\t\n");
-  println(diameterCheckbox.getArrayValue());
+//  print("got an event from "+diameterCheckbox.getName()+"\t\n");
+//  println(diameterCheckbox.getArrayValue());
   int col = 0;
   for (int i=0;i<diameterCheckbox.getArrayValue().length;i++) {
     diameterSwitchs[i] = (int)diameterCheckbox.getArrayValue()[i];
-    print(diameterSwitchs[i]);
+//    print(diameterSwitchs[i]);
   }
-  println();    
+//  println();    
   }
   if (theEvent.isFrom(strokeCheckbox)) {
-  print("got an event from "+strokeCheckbox.getName()+"\t\n");
-  println(strokeCheckbox.getArrayValue());
+//  print("got an event from "+strokeCheckbox.getName()+"\t\n");
+//  println(strokeCheckbox.getArrayValue());
   int col = 0;
   for (int i=0;i<strokeCheckbox.getArrayValue().length;i++) {
     strokeSwitchs[i] = (int)strokeCheckbox.getArrayValue()[i];
-    print(strokeSwitchs[i]);
+//    print(strokeSwitchs[i]);
   }
-  println();    
+//  println();    
   }
   if (theEvent.isFrom(angleCheckbox)) {
-  print("got an event from "+angleCheckbox.getName()+"\t\n");
-  println(angleCheckbox.getArrayValue());
+//  print("got an event from "+angleCheckbox.getName()+"\t\n");
+//  println(angleCheckbox.getArrayValue());
   int col = 0;
   for (int i=0;i<angleCheckbox.getArrayValue().length;i++) {
     angleSwitchs[i] = (int)angleCheckbox.getArrayValue()[i];
-    print(angleSwitchs[i]);
+//    print(angleSwitchs[i]);
   }
-  println();    
+//  println();    
   }
 }
