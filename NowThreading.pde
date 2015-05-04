@@ -24,6 +24,7 @@ int[] diameterSwitchs = new int[3];
 int[] strokeSwitchs = new int[3];
 int[] angleSwitchs = new int[3];
 String[] loadSwitchs = {"threads-01.json", "threads-02.json", "threads-03.json"};
+boolean isDrawingAxis = true;
 
 
 
@@ -44,7 +45,9 @@ void draw() {
   background(255, 255, 255);
   
   // draw axis
-  drawAxis();
+  if (isDrawingAxis) {
+    drawAxis();
+  }
   
   // draw threads
   pushMatrix();
@@ -198,33 +201,44 @@ void initControls() {
   .setSize(colWidth-textColWidth, 20)
   .setColorLabel(color(0));
   
-  cp5.addSlider("dashLength")
-  .setRange(1, 50)
-  .setValue(dashLength)
+  cp5.addToggle("isDrawingAxis")
   .setPosition(x, (++counter)*rowHeight + 10)
-  .setSize(colWidth-textColWidth, 20)
-  .setColorLabel(color(0));
+  .setSize(20, 20);
   
-  cp5.addSlider("dashLine")
-  .setRange(1, 50)
-  .setValue(dashLine)
-  .setPosition(x, (++counter)*rowHeight + 10)
-  .setSize(colWidth-textColWidth, 20)
-  .setColorLabel(color(0));
-  
-  cp5.addSlider("dashAlpha")
-  .setRange(0, 255)
-  .setValue(dashAlpha)
-  .setPosition(x, (++counter)*rowHeight + 10)
-  .setSize(colWidth-textColWidth, 20)
-  .setColorLabel(color(0));
-  
-  cp5.addSlider("dashWeight")
-  .setRange(1, 10)
-  .setValue(dashWeight)
-  .setPosition(x, (++counter)*rowHeight + 10)
-  .setSize(colWidth-textColWidth, 20)
-  .setColorLabel(color(0));
+  cp5.addTextlabel("label")
+  .setText("Draw Axis")
+  .setPosition(x+20, counter*rowHeight + 15)
+  .setColorValue(0xff000000)
+  ;
+// Too much control of the dashlines
+//  
+//  cp5.addSlider("dashLength")
+//  .setRange(1, 50)
+//  .setValue(dashLength)
+//  .setPosition(x, (++counter)*rowHeight + 10)
+//  .setSize(colWidth-textColWidth, 20)
+//  .setColorLabel(color(0));
+//  
+//  cp5.addSlider("dashLine")
+//  .setRange(1, 50)
+//  .setValue(dashLine)
+//  .setPosition(x, (++counter)*rowHeight + 10)
+//  .setSize(colWidth-textColWidth, 20)
+//  .setColorLabel(color(0));
+//  
+//  cp5.addSlider("dashAlpha")
+//  .setRange(0, 255)
+//  .setValue(dashAlpha)
+//  .setPosition(x, (++counter)*rowHeight + 10)
+//  .setSize(colWidth-textColWidth, 20)
+//  .setColorLabel(color(0));
+//  
+//  cp5.addSlider("dashWeight")
+//  .setRange(1, 10)
+//  .setValue(dashWeight)
+//  .setPosition(x, (++counter)*rowHeight + 10)
+//  .setSize(colWidth-textColWidth, 20)
+//  .setColorLabel(color(0));
  
   
   diameterCheckbox = cp5.addCheckBox("diameterCheckbox")
