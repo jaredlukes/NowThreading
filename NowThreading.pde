@@ -28,6 +28,9 @@ int[] angleSwitchs = new int[3]; //used to define what data is used to drive ang
 String[] loadSwitchs = {"threads-01.json", "threads-02.json", "threads-03.json"}; //what data do we want to use
 boolean isDrawingAxis = true;
 
+// Golden Ratio
+final float GOLDEN = 1.618033988*TWO_PI;
+
 //MAX SIZE
 float hyperbolicMultiplier;
 
@@ -67,12 +70,11 @@ void draw() {
     //first check to see if it's even an active thread
     if (active) {
       int d = recipe.getInt("shares")*diameterSwitchs[0]+recipe.getInt("likes")*diameterSwitchs[1]+recipe.getInt("comments")*diameterSwitchs[2]+baseDiameter; //this will someday be a var defined at run time.
-      int w = ceil((recipe.getInt("shares")*strokeSwitchs[0]+recipe.getInt("likes")*strokeSwitchs[1]+recipe.getInt("comments")*strokeSwitchs[2])/Stroke_Weight_Denominator)+baseStroke; //this will someday be a var defined at run time.
+      int w = ceil((recipe.getInt("shares")*strokeSwitchs[0]+recipe.getInt("likes")*strokeSwitchs[1]+recipe.getInt("comments")*strokeSwitchs[2])/Stroke_Weight_Denominator) + baseStroke; //this will someday be a var defined at run time.
       float a = float(recipe.getInt("shares")*angleSwitchs[0]+recipe.getInt("likes")*angleSwitchs[1]+recipe.getInt("comments")*angleSwitchs[2])/float(Circumference_Total); //this will someday be a var defined at run time.
       if (w < 1) {
         w = 1;
-      }     
-      
+      }
       
       if (d != 0 && w != 0 && a > 0) {
         JSONArray colorArray = recipe.getJSONArray("color");
@@ -80,8 +82,8 @@ void draw() {
         color strokeColor = color(colors[0],colors[1], colors[2], arcAlpha); // 4th argument is the alpha amount 0-255
         stroke(strokeColor);
         strokeWeight(w);
-        rotate(radians(threadAngle));
-        
+//        rotate(radians(threadAngle));
+        rotate(i*GOLDEN);
         //if arc is over Circumference_Total then draw circle first then larger arc
         int diameterCheck = 0;
         while (a > 1) {
@@ -222,7 +224,7 @@ void initControls() {
   
   cp5.addSlider("baseStroke")
   .setRange(0, 24)
-  .setValue(baseDiameter)
+  .setValue(baseStroke)
   .setPosition(x, (++counter)*rowHeight + 10)
   .setSize(colWidth-textColWidth, 20)
   .setColorLabel(color(0));
