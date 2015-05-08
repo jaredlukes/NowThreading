@@ -28,6 +28,8 @@ int[] angleSwitchs = new int[3]; //used to define what data is used to drive ang
 String[] loadSwitchs = {"threads-01.json", "threads-02.json", "threads-03.json"}; //what data do we want to use
 boolean isDrawingAxis = true;
 
+//MAX SIZE
+float hyperbolicMultiplier;
 
 
 void setup() {
@@ -35,8 +37,8 @@ void setup() {
   smooth(8);
   frameRate(30);
   background(255, 255, 255);
+  hyperbolicMultiplier = height/PI;
   getThreads();
-  //noLoop();
   initControls();
   diameterCheckbox.activate(0);
   strokeCheckbox.activate(2);
@@ -80,26 +82,25 @@ void draw() {
         strokeWeight(w);
         rotate(radians(threadAngle));
         
-        //just draw a circle for now ...
-        //ellipse(0, -d/2, d, d);
-        
-        //want to draw an arc ...
         //if arc is over Circumference_Total then draw circle first then larger arc
         int diameterCheck = 0;
         while (a > 1) {
           strokeColor = color(colors[0],colors[1], colors[2], ellipseAlpha);
           
-          if (d > height/2) {
-           d = round((height/2) - diameterCheck * (diameterGrothRatio-1));
-          }
+// Shouldn't need this if hyperbolic() works          
+//          if (d > height/2) {
+//           d = round((height/2) - diameterCheck * (diameterGrothRatio-1));
+//          }
           stroke(strokeColor);
-          ellipse(-d/2, 0, d, d);
+          int drawDiameter = hyperbolic(d);
+          ellipse(-drawDiameter/2, 0, drawDiameter, drawDiameter);
+//          d = round(float(d) * (diameterGrothRatio));
           d = round(float(d) * (diameterGrothRatio));
           a = a - 1;
         }
         float aAmount = a*TWO_PI;
         strokeColor = color(colors[0],colors[1], colors[2], arcAlpha);
-        gradientArc(aAmount, w, d, strokeColor );
+        gradientArc(aAmount, w, hyperbolic(d), strokeColor );
         noFill();
       }
     }
@@ -119,6 +120,11 @@ void drawAxis() {
   for (int y = 0; y < dashY; y++) {
     line(400,(y*dashLength),400,(y*dashLength)+dashLine);
   }
+}
+
+//used to define the scale of the circles
+int hyperbolic(int a) {
+  return round(atan(a*.01)*hyperbolicMultiplier);
 }
 
 // draw gradient arc at origin
@@ -173,6 +179,10 @@ void getThreads(int index) {
   }
 };
 
+//***************
+//* CONTROLS!!! *
+//***************
+
 void initControls() {
   cp5 = new ControlP5(this);
 
@@ -183,7 +193,7 @@ void initControls() {
   int rowHeight = 50;
   
   cp5.addSlider("Circumference_Total")
-  .setRange(20, 500)
+  .setRange(10, 500)
   .setValue(Circumference_Total)
   .setPosition(x, (++counter)*rowHeight + 10)
   .setSize(colWidth-textColWidth, 20)
@@ -224,8 +234,8 @@ void initControls() {
   cp5.addTextlabel("label")
   .setText("Draw Axis")
   .setPosition(x+20, counter*rowHeight + 15)
-  .setColorValue(0xff000000)
-  ;
+  .setColorValue(0xff000000);
+  
 // Too much control of the dashlines
 //  
 //  cp5.addSlider("dashLength")
