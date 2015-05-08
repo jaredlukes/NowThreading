@@ -20,10 +20,12 @@ int dashWeight = 1;
 float diameterGrothRatio = 1.2;
 int arcAlpha = 128;
 int ellipseAlpha = 255;
-int[] diameterSwitchs = new int[3];
-int[] strokeSwitchs = new int[3];
-int[] angleSwitchs = new int[3];
-String[] loadSwitchs = {"threads-01.json", "threads-02.json", "threads-03.json"};
+int baseDiameter = 0; //definds the smallest the circle can be.
+int baseStroke = 0; //definds the smallest the stroke can be.
+int[] diameterSwitchs = new int[3]; //used to define what data is used to drive diameter
+int[] strokeSwitchs = new int[3]; //used to define what data is used to drive stroke weight
+int[] angleSwitchs = new int[3]; //used to define what data is used to drive angle
+String[] loadSwitchs = {"threads-01.json", "threads-02.json", "threads-03.json"}; //what data do we want to use
 boolean isDrawingAxis = true;
 
 
@@ -62,8 +64,8 @@ void draw() {
     
     //first check to see if it's even an active thread
     if (active) {
-      int d = recipe.getInt("shares")*diameterSwitchs[0]+recipe.getInt("likes")*diameterSwitchs[1]+recipe.getInt("comments")*diameterSwitchs[2]; //this will someday be a var defined at run time.
-      int w = ceil((recipe.getInt("shares")*strokeSwitchs[0]+recipe.getInt("likes")*strokeSwitchs[1]+recipe.getInt("comments")*strokeSwitchs[2])/Stroke_Weight_Denominator); //this will someday be a var defined at run time.
+      int d = recipe.getInt("shares")*diameterSwitchs[0]+recipe.getInt("likes")*diameterSwitchs[1]+recipe.getInt("comments")*diameterSwitchs[2]+baseDiameter; //this will someday be a var defined at run time.
+      int w = ceil((recipe.getInt("shares")*strokeSwitchs[0]+recipe.getInt("likes")*strokeSwitchs[1]+recipe.getInt("comments")*strokeSwitchs[2])/Stroke_Weight_Denominator)+baseStroke; //this will someday be a var defined at run time.
       float a = float(recipe.getInt("shares")*angleSwitchs[0]+recipe.getInt("likes")*angleSwitchs[1]+recipe.getInt("comments")*angleSwitchs[2])/float(Circumference_Total); //this will someday be a var defined at run time.
       if (w < 1) {
         w = 1;
@@ -194,9 +196,23 @@ void initControls() {
   .setSize(colWidth-textColWidth, 20)
   .setColorLabel(color(0));
   
+  cp5.addSlider("baseDiameter")
+  .setRange(0, 255)
+  .setValue(baseDiameter)
+  .setPosition(x, (++counter)*rowHeight + 10)
+  .setSize(colWidth-textColWidth, 20)
+  .setColorLabel(color(0));
+  
   cp5.addSlider("Stroke_Weight_Denominator")
   .setRange(25, 200)
   .setValue(Stroke_Weight_Denominator)
+  .setPosition(x, (++counter)*rowHeight + 10)
+  .setSize(colWidth-textColWidth, 20)
+  .setColorLabel(color(0));
+  
+  cp5.addSlider("baseStroke")
+  .setRange(0, 24)
+  .setValue(baseDiameter)
   .setPosition(x, (++counter)*rowHeight + 10)
   .setSize(colWidth-textColWidth, 20)
   .setColorLabel(color(0));
