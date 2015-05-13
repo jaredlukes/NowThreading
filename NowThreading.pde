@@ -10,7 +10,7 @@ float hyperbolicMultiplier = 3.333;          // Max Size .01
 final float GOLDEN = 1.618033988;          // Golden Ratio
 final float GOLDEN_ANGLE = GOLDEN*TWO_PI;  // Golden Ratio as Angle
 int baseDiameter = 0;                      // The Base Radius of the Data Objects
-int baseStroke = 5;                        // The Base stroke of the Data Objects
+int baseStroke = 0;                        // The Base stroke of the Data Objects
 float basePadding = .1;
 float baseMargin = .1;
 
@@ -70,8 +70,8 @@ int eggAlpha = 128;
 //* HEX VARS *
 //************
 
-int hexCenterSize = 72;                       // Default at 72
-int hexAlpha = 140;
+int hexCenterSize = 72;                       // Default 72
+int hexAlpha = 102;                           // Default 140
 int hexStroke = 0;
 
 //*****************
@@ -90,12 +90,12 @@ void setup() {
   logo = loadShape("ThreadLogo.svg");        // Load the logo
   if (isControlers) {
     controlBG = loadImage("d2-placeholder-1920.png");
-    initControls();
-    designRadioButton.activate(2);
-    diameterCheckbox.activate(0);
-    strokeCheckbox.activate(2);
-    angleCheckbox.activate(1);
   }
+  initControls();
+  designRadioButton.activate(2);
+  diameterCheckbox.activate(0);
+  strokeCheckbox.activate(2);
+  angleCheckbox.activate(1);
   hyperbolicSizeMultiplier = logoHeight/PI;            // The max size is half the height
   getThreads();                                // Get Data
 }
@@ -327,11 +327,12 @@ void drawHexDesign() {
   //**************
   //* Center Hex *
   //**************
-  
-  fill(255);
-  noStroke();
-  rotate(-PI / 2.0);
-  hex(0,0,hexCenterSize,0.0);
+  if (isDrawingCenter) {
+    fill(255);
+    noStroke();
+    rotate(-PI / 2.0);
+    hex(0,0,hexCenterSize,0.0);
+  }
   popMatrix();
 }
 
@@ -350,7 +351,7 @@ void polygon(int n, float cx, float cy, float w, float h, float startAngle)
        The vertical "radius" is one half the height */
     w = w / 2.0;
     h = h / 2.0;
-  
+    
     beginShape();
     for (int i = 0; i < n; i++)
     {
