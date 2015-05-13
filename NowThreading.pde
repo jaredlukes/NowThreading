@@ -6,11 +6,14 @@ CheckBox strokeCheckbox;
 CheckBox angleCheckbox;
 DropdownList loadList;
 
+//*************
+//* DATA VARS *
+//*************
 String baseURL = "http://nowthreading.com/api/";
-JSONObject json;
-JSONObject threadjson;
 JSONArray recipes;
-String date;
+String[] loadSwitchs = {"threads-01.json", "threads-02.json", "threads-03.json"}; //what data do we want to use
+int recipesSize;
+
 int Stroke_Weight_Denominator = 100; // Makes a stroke thinner
 int Circumference_Total = 100;
 int dashLength = 6;
@@ -25,7 +28,6 @@ int baseStroke = 0; //definds the smallest the stroke can be.
 int[] diameterSwitchs = new int[3]; //used to define what data is used to drive diameter
 int[] strokeSwitchs = new int[3]; //used to define what data is used to drive stroke weight
 int[] angleSwitchs = new int[3]; //used to define what data is used to drive angle
-String[] loadSwitchs = {"threads-01.json", "threads-02.json", "threads-03.json"}; //what data do we want to use
 boolean isDrawingAxis = true;
 
 // Golden Ratio
@@ -60,9 +62,7 @@ void draw() {
   pushMatrix();
   noFill();
   translate(400, height/2);
-  int recipesSize = recipes.size();
-  float threadAngle = 360/recipesSize;
-//  println("Thread angle " +threadAngle + " and thread count " + recipesSize);
+  
   for (int i = 0; i < recipesSize; i++) {
     JSONObject recipe = recipes.getJSONObject(i);
     boolean active = recipe.getBoolean("active");
@@ -82,21 +82,14 @@ void draw() {
         color strokeColor = color(colors[0],colors[1], colors[2], arcAlpha); // 4th argument is the alpha amount 0-255
         stroke(strokeColor);
         strokeWeight(w);
-//        rotate(radians(threadAngle));
         rotate(i*GOLDEN);
         //if arc is over Circumference_Total then draw circle first then larger arc
         int diameterCheck = 0;
         while (a > 1) {
           strokeColor = color(colors[0],colors[1], colors[2], ellipseAlpha);
-          
-// Shouldn't need this if hyperbolic() works          
-//          if (d > height/2) {
-//           d = round((height/2) - diameterCheck * (diameterGrothRatio-1));
-//          }
           stroke(strokeColor);
           int drawDiameter = hyperbolic(d);
           ellipse(-drawDiameter/2, 0, drawDiameter, drawDiameter);
-//          d = round(float(d) * (diameterGrothRatio));
           d = round(float(d) * (diameterGrothRatio));
           a = a - 1;
         }
@@ -151,12 +144,15 @@ void getThreads() {
 }
 
 void getThreads(int index) {
+  JSONObject json;
+  JSONObject threadjson;
+  String date;
 //  json = loadJSONObject(baseURL + "threads.json");
   json = loadJSONObject(baseURL + loadSwitchs[index]);
   threadjson = json.getJSONObject("threads");
   date = threadjson.getString("date");
   recipes = threadjson.getJSONArray("recipe");
-  println("The Thread date is " + date + " and there are " + recipes.size() + " recipes.");
+//  println("The Thread date is " + date + " and there are " + recipes.size() + " recipes.");
   for (int i = 0; i < recipes.size(); i++) {
     JSONObject recipe = recipes.getJSONObject(i);
     
@@ -179,6 +175,7 @@ void getThreads(int index) {
     }
     println(recipe.getInt("likes") + " " + recipe.getInt("shares") + " " + recipe.getInt("comments"));
   }
+  recipesSize = recipes.size();
 };
 
 //***************
