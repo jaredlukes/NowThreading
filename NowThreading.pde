@@ -10,7 +10,7 @@ float hyperbolicMultiplier = 3.333;          // Max Size .01
 final float GOLDEN = 1.618033988;          // Golden Ratio
 final float GOLDEN_ANGLE = GOLDEN*TWO_PI;  // Golden Ratio as Angle
 int baseDiameter = 0;                      // The Base Radius of the Data Objects
-int baseStroke = 0;                        // The Base stroke of the Data Objects
+int baseStroke = 4;                        // The Base stroke of the Data Objects
 float basePadding = .1;
 float baseMargin = .1;
 
@@ -71,8 +71,9 @@ int eggAlpha = 128;
 //************
 
 int hexCenterSize = 72;                       // Default 72
-int hexAlpha = 102;                           // Default 140
+int hexAlpha = 140;                           // Default 140 or 102
 int hexStroke = 0;
+boolean isDrawingCenter = true;               // Default true
 
 //*****************
 //* CONTROLS VARS *
@@ -529,6 +530,18 @@ void initControls() {
   .setCaptionLabel("Center Size (" + hexCenterSize + ")");
   ;
   
+  cp5.addToggle("isDrawingCenter")
+  .setPosition(x, (++counter)*rowHeight + logoHeight)
+  .setSize(20, 20)
+  .setCaptionLabel("Draw Center");
+  
+  cp5.addSlider("hexAlpha")
+  .setRange(0, 255)
+  .setValue(hexAlpha)
+  .setPosition(x, (++counter)*rowHeight + logoHeight)
+  .setSize(colWidth-textColWidth, 20)
+  .setCaptionLabel("Pentagon Alpha (" + hexAlpha + ")");
+  ;
 }
 
 void controlEvent(ControlEvent theEvent) {
