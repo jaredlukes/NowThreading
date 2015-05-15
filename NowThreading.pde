@@ -71,7 +71,7 @@ int eggAlpha = 128;
 //************
 
 int hexCenterSize = 72;                       // Default 72
-int hexAlpha = 140;                           // Default 140 or 102
+int hexAlpha = 102;                           // Default 140 or 102
 int hexStroke = 0;
 boolean isDrawingCenter = false;               // Default true
 
@@ -308,7 +308,6 @@ void drawHexDesign() {
   pushMatrix();
   translate(logoHeight/2, logoHeight/2);
   
-  blendMode(MULTIPLY);
   pushMatrix();
   for (int i = 0; i < recipesSize; i++) {
     JSONObject recipe = recipes.getJSONObject(i);
@@ -333,8 +332,7 @@ void drawHexDesign() {
     
   } // End Hex Loop
   popMatrix();
-
-  blendMode(BLEND);
+  
   pushMatrix();
   for (int i = 0; i < recipesSize; i++) {
     JSONObject recipe = recipes.getJSONObject(i);
