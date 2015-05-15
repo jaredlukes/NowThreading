@@ -73,11 +73,19 @@ int eggAlpha = 128;
 int hexCenterSize = 72;                       // Default 72
 int hexAlpha = 140;                           // Default 140 or 102
 int hexStroke = 0;
-boolean isDrawingCenter = true;               // Default true
+boolean isDrawingCenter = false;               // Default true
 
-//*****************
-//* CONTROLS VARS *
-//*****************
+
+//************
+
+//************
+
+//** SETUP **
+
+//************
+
+//************
+
 
 void setup() {
   if (isControlers) {
@@ -300,6 +308,7 @@ void drawHexDesign() {
   pushMatrix();
   translate(logoHeight/2, logoHeight/2);
   
+  blendMode(MULTIPLY);
   pushMatrix();
   for (int i = 0; i < recipesSize; i++) {
     JSONObject recipe = recipes.getJSONObject(i);
@@ -315,6 +324,30 @@ void drawHexDesign() {
       int[] colors = colorArray.getIntArray();
       color fillColor = color(colors[0],colors[1], colors[2], hexAlpha); // 4th argument is the alpha amount 0-255
       fill(fillColor);
+      noStroke();
+      strokeWeight(baseStroke);
+      rotate(i*GOLDEN);
+      hex((d/2)*cos(radians(36)),0,d,0);
+      
+    } // End if active
+    
+  } // End Hex Loop
+  popMatrix();
+
+  blendMode(BLEND);
+  pushMatrix();
+  for (int i = 0; i < recipesSize; i++) {
+    JSONObject recipe = recipes.getJSONObject(i);
+    boolean active = recipe.getBoolean("active");
+    
+    if (active) {  //first check to see if it's even an active thread
+      d = recipe.getInt("shares")+recipe.getInt("likes")+recipe.getInt("comments")+baseDiameter;
+      if (d < 1) { // Make sure radius has a size
+        d = 1;
+      } // End if radius is less than 1
+      d = hyperbolic(d);
+      JSONArray colorArray = recipe.getJSONArray("color");
+      noFill();
       stroke(255);
       strokeWeight(baseStroke);
       rotate(i*GOLDEN);
@@ -542,6 +575,7 @@ void initControls() {
   .setSize(colWidth-textColWidth, 20)
   .setCaptionLabel("Pentagon Alpha (" + hexAlpha + ")");
   ;
+  
 }
 
 void controlEvent(ControlEvent theEvent) {
