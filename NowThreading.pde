@@ -63,6 +63,7 @@ int alphaAmount = 64;          // Was 102
 
 int polyCount = 5;  //MAX 8
 
+int[] rawSize = new int[polyCount];
 float[] pentSize = new float[polyCount];
 RPolygon[] ss = new RPolygon[polyCount];  //Original Shapes
 RPolygon[] fs;                            //Fragmented Shapes
@@ -101,20 +102,20 @@ void setup() {
   RG.init(this);
   RG.setPolygonizer(RG.ADAPTATIVE);
   
-  logo = loadShape("ThreadLogo.svg");        // Load the logo
+  logo = loadShape("ThreadLogo.svg");                  // Load the logo
   if (isControlers) {
     controlBG = loadImage("d2-placeholder-1920.png");
   }
   initControls();
   
   hyperbolicSizeMultiplier = logoHeight/PI;            // The max size is half the height
-  getThreads();                                // Get Data
-  
+  getThreads();                                        // Get Data
+
   //setup Pentagon
   int_array_recurse(polyCount);
   fs = new RPolygon[fragmentCount];
   
-  randomSize();
+//  randomSize();
   
 }
 
@@ -124,9 +125,8 @@ void draw() {
   
   
   // Draw Pentagons
-  
+//  initializePentegon();
   growSize();
-  
   createFragments();
   
   
@@ -159,6 +159,12 @@ void draw() {
     line(230,0,230,460);
     noFill();
     ellipse(230,230,460,460);
+    int tempD;
+    noFill();
+    for( int i = 0; i < 10; i++) {
+      tempD = 250*(i+1);
+      ellipse(230,230,hyperbolic(tempD)*2,hyperbolic(tempD)*2);
+    }
   }
   
   // Draw controlers
@@ -204,11 +210,12 @@ void getThreads(int index) {
     }
   }
   recipesSize = recipes.size();
+  initializePentegon();
 };
 
 //used to define the scale of the circles
 int hyperbolic(int a) {
-  return round(atan(a*hyperbolicMultiplier/1000)*hyperbolicSizeMultiplier);
+  return round(atan(a*hyperbolicMultiplier/2000)*hyperbolicSizeMultiplier);
 }
 
 
@@ -302,7 +309,35 @@ void controlEvent(ControlEvent theEvent) {
   }
 }
 
+//************************
+//* Initialize pentegons *
+//************************
 
+void initializePentegon() {
+  polyCount = recipesSize;
+  ss = new RPolygon[recipesSize];
+  rawSize = new int[polyCount];
+  pentSize = new float[recipesSize];
+  
+  for (int i = 0; i < recipesSize; i++) {
+    JSONObject recipe = recipes.getJSONObject(i);
+    boolean active = recipe.getBoolean("active");
+    
+    if (active) {  //first check to see if it's even an active thread
+      rawSize[i]  = recipe.getInt("shares")+recipe.getInt("likes")+recipe.getInt("comments");
+      if (rawSize[i]  < 1) { // Make sure radius has a size
+        rawSize[i]  = 1;
+      } // End if radius is less than 1
+      pentSize[i] = hyperbolic(rawSize[i]+baseDiameter);
+      
+      JSONArray colorArray = recipe.getJSONArray("color");
+      int[] colors = colorArray.getIntArray();
+      baseColors[i] = color(colors[0],colors[1], colors[2]);
+      
+    } // End if active
+    
+  } // End Hex Loop
+}
 
 void randomSize() {
   for (int i = 0; i < polyCount; i++){
@@ -311,8 +346,9 @@ void randomSize() {
 }
 void growSize() {
   for (int i = 0; i < polyCount; i++){
-    if (random(1) > .99) {
-      pentSize[i] += growthRate;
+    if (random(1) > .50) {
+      rawSize[i] += growthRate;
+      pentSize[i] = hyperbolic(rawSize[i]+baseDiameter);
     }
   }
 }
@@ -321,7 +357,7 @@ void growSize() {
 void createFragments() {
   //define the original shapes
   for (int i = 0; i < ss.length; i++){
-    ss[i] = new RPolygon(RPPent(pentSize[i]+baseDiameter, GOLDEN_ANGLE*i));
+    ss[i] = new RPolygon(RPPent(pentSize[i], GOLDEN_ANGLE*i));
     ss[i].setFill(color(50,50,50));
   };
   
@@ -520,3 +556,77 @@ int[] int_array_sub_next(int[] next) {
   }
   return temp;
 }
+
+
+//**************
+//* HEX Ref *
+//**************
+
+
+/*
+void drawHexDesign() {
+  int d = baseDiameter; // radius of the hex
+  pushMatrix();
+  translate(logoHeight/2, logoHeight/2);
+  
+  pushMatrix();
+  for (int i = 0; i < recipesSize; i++) {
+    JSONObject recipe = recipes.getJSONObject(i);
+    boolean active = recipe.getBoolean("active");
+    
+    if (active) {  //first check to see if it's even an active thread
+      d = recipe.getInt("shares")+recipe.getInt("likes")+recipe.getInt("comments")+baseDiameter;
+      if (d < 1) { // Make sure radius has a size
+        d = 1;
+      } // End if radius is less than 1
+      d = hyperbolic(d);
+      JSONArray colorArray = recipe.getJSONArray("color");
+      int[] colors = colorArray.getIntArray();
+      color fillColor = color(colors[0],colors[1], colors[2], hexAlpha); // 4th argument is the alpha amount 0-255
+      fill(fillColor);
+      noStroke();
+      strokeWeight(baseStroke);
+      rotate(i*GOLDEN);
+      hex((d/2)*cos(radians(36)),0,d,0);
+      
+    } // End if active
+    
+  } // End Hex Loop
+  popMatrix();
+  
+  pushMatrix();
+  for (int i = 0; i < recipesSize; i++) {
+    JSONObject recipe = recipes.getJSONObject(i);
+    boolean active = recipe.getBoolean("active");
+    
+    if (active) {  //first check to see if it's even an active thread
+      d = recipe.getInt("shares")+recipe.getInt("likes")+recipe.getInt("comments")+baseDiameter;
+      if (d < 1) { // Make sure radius has a size
+        d = 1;
+      } // End if radius is less than 1
+      d = hyperbolic(d);
+      JSONArray colorArray = recipe.getJSONArray("color");
+      noFill();
+      stroke(255);
+      strokeWeight(baseStroke);
+      rotate(i*GOLDEN);
+      hex((d/2)*cos(radians(36)),0,d,0);
+      
+    } // End if active
+    
+  } // End Hex Loop
+  popMatrix();
+  
+  //**************
+  //* Center Hex *
+  //**************
+  if (isDrawingCenter) {
+    fill(255);
+    noStroke();
+    rotate(-PI / 2.0);
+    hex(0,0,hexCenterSize,0.0);
+  }
+  popMatrix();
+}
+*/
+
