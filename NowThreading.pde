@@ -1,3 +1,13 @@
+//****************
+//* REQUIRED LIB *
+//****************
+
+import geomerative.*;
+
+import controlP5.*;
+ControlP5 cp5;
+
+
 //***********
 //* GLOBALS *
 //***********
@@ -18,12 +28,6 @@ float baseMargin = .1;
 //* DEV VARS *
 //************
 
-
-import controlP5.*;
-ControlP5 cp5;
-
-RadioButton designRadioButton;
-
 CheckBox diameterCheckbox;
 CheckBox strokeCheckbox;
 CheckBox angleCheckbox;
@@ -33,11 +37,6 @@ boolean isDrawingAxis = false;             // Draw helper Axis?
 boolean isControlers = true;               // Draw contorlers
 
 PImage controlBG;
-
-int[] designSwitchs = new int[3];          // Defines what design is used to draw the data
-int[] diameterSwitchs = new int[3];        // Defines what data is used to drive diameter
-int[] strokeSwitchs = new int[3];          // Defines what data is used to drive stroke weight
-int[] angleSwitchs = new int[3];           // Defines what data is used to drive angle
 
 //*************
 //* DATA VARS *
@@ -50,31 +49,33 @@ String[] loadSwitchs = {"threads-01.json",
                         "threads-03.json"};           // What data do we want to use
 int recipesSize;                                      // Commonly used count of recipes
 
-//************
-//* Arc VARS *
-//************
 
-int Stroke_Weight_Denominator = 100; // Makes a stroke thinner
-int Circumference_Total = 100;
-float diameterGrowthRatio = 1.2;
-int arcAlpha = 128;
-int ellipseAlpha = 255;
+//*****************
+//* PENTAGON VARS *
+//*****************
 
-//************
-//* EGG VARS *
-//************
+int  pentRecurseCount;
+int[][] combinationGate;
+int fragmentCount = 0;
+int alphaAmount = 64;          // Was 102
 
-int eggAlpha = 128;
+//super RPolygon
 
-//************
-//* HEX VARS *
-//************
+int polyCount = 5;  //MAX 8
 
-int hexCenterSize = 72;                       // Default 72
-int hexAlpha = 102;                           // Default 140 or 102
-int hexStroke = 0;
-boolean isDrawingCenter = false;               // Default true
+float[] pentSize = new float[polyCount];
+RPolygon[] ss = new RPolygon[polyCount];  //Original Shapes
+RPolygon[] fs;                            //Fragmented Shapes
 
+color sc1 = color(192,216,45);  //actual color
+color sc2 = color(0,179,240);  //actual color
+color sc3 = color(237,37,92);  //actual color
+color sc4 = color(192,216,45);
+color sc5 = color(95,99,105);
+
+color[] baseColors = {sc1, sc2, sc3, sc4, sc5, sc1, sc2, sc3};
+
+int growthRate = 5;
 
 //************
 
@@ -89,29 +90,68 @@ boolean isDrawingCenter = false;               // Default true
 
 void setup() {
   if (isControlers) {
-    size(logoWidth,logoHeight*2, P2D);
+    size(logoWidth,logoHeight*2);
   } else {
-    size(logoWidth,logoHeight, P2D);
+    size(logoWidth,logoHeight);
   }
   background(255);
   smooth(8);
   frameRate(30);
+  
+  RG.init(this);
+  RG.setPolygonizer(RG.ADAPTATIVE);
+  
   logo = loadShape("ThreadLogo.svg");        // Load the logo
   if (isControlers) {
     controlBG = loadImage("d2-placeholder-1920.png");
   }
   initControls();
-  designRadioButton.activate(2);
-  diameterCheckbox.activate(0);
-  strokeCheckbox.activate(2);
-  angleCheckbox.activate(1);
+  
   hyperbolicSizeMultiplier = logoHeight/PI;            // The max size is half the height
   getThreads();                                // Get Data
+  
+  //setup Pentagon
+  int_array_recurse(polyCount);
+  fs = new RPolygon[fragmentCount];
+  
+  randomSize();
+  
 }
 
 void draw() {
   background(255);    // White wash scene
   shape(logo, 0, 0);  // Draw Logo
+  
+  
+  // Draw Pentagons
+  
+  growSize();
+  
+  createFragments();
+  
+  
+  pushMatrix();
+  translate(logoHeight/2, logoHeight/2);
+  
+  for (int i = 0; i < ss.length; i++){
+    ss[i].setStroke(false);
+    ss[i].draw();
+  };
+
+  fs[2].draw();
+  for (int i = 0; i < fs.length; i++){
+    fs[i].setStroke(false);
+    fs[i].draw();
+  };
+  
+  for (int i = 0; i < ss.length; i++){
+    ss[i].setStroke(color(255,255,255));
+    ss[i].setStrokeAlpha(255);
+    ss[i].setStrokeWeight(baseStroke);
+    ss[i].setFill(false);
+    ss[i].draw();
+  };
+  popMatrix();
   
   if (isDrawingAxis) { // Draw helper Axis?
     stroke(0);
@@ -119,22 +159,6 @@ void draw() {
     line(230,0,230,460);
     noFill();
     ellipse(230,230,460,460);
-  }
-  
-  // Draw arc design
-  if(designSwitchs[0] == 1) {
-    drawArcDesign();
-  }
-  
-  
-  // Draw egg design
-  if(designSwitchs[1] == 1) {
-    drawEggDesign();
-  }
-  
-  // Draw hex design
-  if(designSwitchs[2] == 1) {
-    drawHexDesign();
   }
   
   // Draw controlers
@@ -187,213 +211,6 @@ int hyperbolic(int a) {
   return round(atan(a*hyperbolicMultiplier/1000)*hyperbolicSizeMultiplier);
 }
 
-//**************
-//* ARC DESIGN *
-//**************
-
-void drawArcDesign() {
-  pushMatrix();
-  noFill();
-  translate(logoHeight/2, logoHeight/2);
-  
-  for (int i = 0; i < recipesSize; i++) {
-    JSONObject recipe = recipes.getJSONObject(i);
-    boolean active = recipe.getBoolean("active");
-    
-    //first check to see if it's even an active thread
-    if (active) {
-// TEMP SHUT OFF UNTIL WIRE UP CONTROLS
-      int d = recipe.getInt("shares")*diameterSwitchs[0]+recipe.getInt("likes")*diameterSwitchs[1]+recipe.getInt("comments")*diameterSwitchs[2]+baseDiameter; //this will someday be a var defined at run time.
-      int w = ceil((recipe.getInt("shares")*strokeSwitchs[0]+recipe.getInt("likes")*strokeSwitchs[1]+recipe.getInt("comments")*strokeSwitchs[2])/Stroke_Weight_Denominator) + baseStroke; //this will someday be a var defined at run time.
-      float a = float(recipe.getInt("shares")*angleSwitchs[0]+recipe.getInt("likes")*angleSwitchs[1]+recipe.getInt("comments")*angleSwitchs[2])/float(Circumference_Total); //this will someday be a var defined at run time.
-//      int d = recipe.getInt("shares")+baseDiameter; //this will someday be a var defined at run time.
-//      int w = ceil((recipe.getInt("comments"))/Stroke_Weight_Denominator) + baseStroke; //this will someday be a var defined at run time.
-//      float a = float(recipe.getInt("likes"))/float(Circumference_Total); //this will someday be a var defined at run time.
-      
-      if (w < 1) {
-        w = 1;
-      }
-      
-      if (d != 0 && w != 0 && a > 0) {
-        JSONArray colorArray = recipe.getJSONArray("color");
-        int[] colors = colorArray.getIntArray();
-        color strokeColor = color(colors[0],colors[1], colors[2], arcAlpha); // 4th argument is the alpha amount 0-255
-        stroke(strokeColor);
-        strokeWeight(w);
-        rotate(i*GOLDEN);
-        //if arc is over Circumference_Total then draw circle first then larger arc
-        int diameterCheck = 0;
-        while (a > 1) {
-          strokeColor = color(colors[0],colors[1], colors[2], ellipseAlpha);
-          stroke(strokeColor);
-          int drawDiameter = hyperbolic(d);
-          ellipse(-drawDiameter/2, 0, drawDiameter, drawDiameter);
-          d = round(float(d) * (diameterGrowthRatio));
-          a = a - 1;
-        }
-        float aAmount = a*TWO_PI;
-        strokeColor = color(colors[0],colors[1], colors[2], arcAlpha);
-        gradientArc(aAmount, w, hyperbolic(d), strokeColor );
-        noFill();
-      }
-    }
-  }
-  popMatrix();
-}
-
-// draw gradient arc at origin
-void gradientArc(float angle, float w, int d, color a) {
-  if (d > logoHeight/2) {
-   d = logoHeight/2; 
-  }
-  color newColor = color(red(a),green(a),blue(a),0); 
-  float tStep = 1.0/(float(d)*PI);
-  float angleStep = angle * tStep;
-  float tAngle = 0.0;
-  noStroke();
-  for (float t = 0.0; t < 1.0; t += tStep) {
-    tAngle += angleStep;
-    fill(lerpColor(newColor, a, t));
-    ellipse(cos(tAngle)*(d/2)-d/2,  sin(tAngle)*(d/2), w, w);
-  }
-}
-
-//**************
-//* EGG DESIGN *
-//**************
-
-void drawEggDesign() {
-  int d1 = baseDiameter; // radius of the circle (ellipse with equal width and height
-  int d2 = baseDiameter; // radius of the ellipse
-  int a = 0; // radius of the ellipse
-  noStroke();
-  pushMatrix();
-  translate(logoHeight/2, logoHeight/2);
-  for (int i = 0; i < recipesSize; i++) {
-    JSONObject recipe = recipes.getJSONObject(i);
-    boolean active = recipe.getBoolean("active");
-    
-    if (active) {  //first check to see if it's even an active thread
-      d1 = recipe.getInt("shares")+baseDiameter;
-      d2 = recipe.getInt("shares")+recipe.getInt("likes")+recipe.getInt("comments")+baseDiameter;
-      a = recipe.getInt("shares");
-      if (d1 < 1) { // Make sure radius has a size
-        d1 = 1;
-      } // End if radius is less than 1
-      d1 = hyperbolic(d1);
-      if (d2 < 1) { // Make sure radius has a size
-        d2 = 1;
-      } // End if radius is less than 1
-      d2 = hyperbolic(d2);
-      JSONArray colorArray = recipe.getJSONArray("color");
-      int[] colors = colorArray.getIntArray();
-      fill(colors[0],colors[1], colors[2], eggAlpha);
-      strokeWeight(1);
-      rotate(a);
-      ellipse(0,d1/2+basePadding*(d2-d1),d1,d1);
-      ellipse(0,(d2+baseMargin*d1)/2,d1+2*basePadding*d2+baseMargin*d1,d2+baseMargin*d1);
-      
-    } // End if active
-    
-  } // End Hex Loop
-  popMatrix();
-}
-
-//**************
-//* HEX DESIGN *
-//**************
-
-void drawHexDesign() {
-  int d = baseDiameter; // radius of the hex
-  pushMatrix();
-  translate(logoHeight/2, logoHeight/2);
-  
-  pushMatrix();
-  for (int i = 0; i < recipesSize; i++) {
-    JSONObject recipe = recipes.getJSONObject(i);
-    boolean active = recipe.getBoolean("active");
-    
-    if (active) {  //first check to see if it's even an active thread
-      d = recipe.getInt("shares")+recipe.getInt("likes")+recipe.getInt("comments")+baseDiameter;
-      if (d < 1) { // Make sure radius has a size
-        d = 1;
-      } // End if radius is less than 1
-      d = hyperbolic(d);
-      JSONArray colorArray = recipe.getJSONArray("color");
-      int[] colors = colorArray.getIntArray();
-      color fillColor = color(colors[0],colors[1], colors[2], hexAlpha); // 4th argument is the alpha amount 0-255
-      fill(fillColor);
-      noStroke();
-      strokeWeight(baseStroke);
-      rotate(i*GOLDEN);
-      hex((d/2)*cos(radians(36)),0,d,0);
-      
-    } // End if active
-    
-  } // End Hex Loop
-  popMatrix();
-  
-  pushMatrix();
-  for (int i = 0; i < recipesSize; i++) {
-    JSONObject recipe = recipes.getJSONObject(i);
-    boolean active = recipe.getBoolean("active");
-    
-    if (active) {  //first check to see if it's even an active thread
-      d = recipe.getInt("shares")+recipe.getInt("likes")+recipe.getInt("comments")+baseDiameter;
-      if (d < 1) { // Make sure radius has a size
-        d = 1;
-      } // End if radius is less than 1
-      d = hyperbolic(d);
-      JSONArray colorArray = recipe.getJSONArray("color");
-      noFill();
-      stroke(255);
-      strokeWeight(baseStroke);
-      rotate(i*GOLDEN);
-      hex((d/2)*cos(radians(36)),0,d,0);
-      
-    } // End if active
-    
-  } // End Hex Loop
-  popMatrix();
-  
-  //**************
-  //* Center Hex *
-  //**************
-  if (isDrawingCenter) {
-    fill(255);
-    noStroke();
-    rotate(-PI / 2.0);
-    hex(0,0,hexCenterSize,0.0);
-  }
-  popMatrix();
-}
-
-void hex(float cx, float cy, float d, float startAngle)
-{
-  polygon(5, cx, cy, d, d, startAngle);
-}
-
-// https://processing.org/tutorials/anatomy/
-void polygon(int n, float cx, float cy, float w, float h, float startAngle)
-{
-  if (n > 2) {
-    float angle = TWO_PI/ n;
-  
-    /* The horizontal "radius" is one half the width;
-       The vertical "radius" is one half the height */
-    w = w / 2.0;
-    h = h / 2.0;
-    
-    beginShape();
-    for (int i = 0; i < n; i++)
-    {
-      vertex(cx + w * cos(startAngle + angle * i),
-        cy + h * sin(startAngle + angle * i));
-    }
-    endShape(CLOSE);
-  }
-}
-
 
 //***************
 //* CONTROLS!!! *
@@ -429,24 +246,6 @@ void initControls() {
   for (int i=0;i<loadSwitchs.length;i++) {
     loadList.addItem(loadSwitchs[i], i);
   }
-
-  designRadioButton = cp5.addRadioButton("radioButton")
-          .setPosition(x, (++counter)*rowHeight + logoHeight)
-          .setSize((colWidth-textColWidth)/3, 20)
-          .setItemsPerRow(3)
-          .setSpacingColumn(25)
-          .addItem("Arc", 1)
-          .addItem("Egg", 1)
-          .addItem("Pent", 1)
-         ;
-     
-     for(Toggle t:designRadioButton.getItems()) {
-       t.captionLabel().setColorBackground(color(200,200,200,64));
-       t.captionLabel().style().moveMargin(-7,0,0,-3);
-       t.captionLabel().style().movePadding(7,0,0,3);
-       t.captionLabel().style().backgroundWidth = 20;
-       t.captionLabel().style().backgroundHeight = 13;
-     }
      
   cp5.addSlider("hyperbolicMultiplier")
   .setRange(5, 10)
@@ -470,6 +269,14 @@ void initControls() {
   .setNumberOfTickMarks(21)
   .setCaptionLabel("Base Stroke (" + baseStroke + ")");
   
+  cp5.addSlider("growthRate")
+  .setRange(0, 20)
+  .setValue(growthRate)
+  .setPosition(x, (++counter)*rowHeight + logoHeight)
+  .setSize(colWidth-textColWidth, 20)
+  .setNumberOfTickMarks(21)
+  .setCaptionLabel("Growth Rate (" + growthRate + ")");
+  
   cp5.addToggle("isDrawingAxis")
   .setPosition(x, (++counter)*rowHeight + logoHeight)
   .setSize(20, 20)
@@ -479,127 +286,9 @@ void initControls() {
   .setText("Draw Axis")
   .setPosition(x+25, counter*rowHeight + logoHeight + 5);
   
-  
-// NEW COLUMN
-  x = x+colWidth;
-  counter = 0;
-
-  
-  cp5.addTextlabel("ArcLabel")
-  .setText("Arc Controls")
-  .setPosition(x, counter*rowHeight + logoHeight + 20);
-  
-  cp5.addSlider("Circumference_Total")
-  .setRange(10, 500)
-  .setValue(Circumference_Total)
-  .setPosition(x, (++counter)*rowHeight + logoHeight)
-  .setSize(colWidth-textColWidth, 20)
-  .setCaptionLabel("Circumference Total (" + Circumference_Total + ")");
- 
-  cp5.addSlider("Stroke_Weight_Denominator")
-  .setRange(25, 200)
-  .setValue(Stroke_Weight_Denominator)
-  .setPosition(x, (++counter)*rowHeight + logoHeight)
-  .setSize(colWidth-textColWidth, 20)
-  .setCaptionLabel("Stroke Weight Denominator (" + Stroke_Weight_Denominator + ")");
-  
-  cp5.addSlider("diameterGrowthRatio")
-  .setRange(.5, 4.5)
-  .setValue(diameterGrowthRatio)
-  .setPosition(x, (++counter)*rowHeight + logoHeight)
-  .setSize(colWidth-textColWidth, 20)
-  .setCaptionLabel("Diameter Growth Ratio (" + diameterGrowthRatio + ")");
-  
-  diameterCheckbox = cp5.addCheckBox("diameterCheckbox")
-                .setPosition(x, (++counter)*rowHeight + logoHeight)
-                .setSize(20, 20)
-                .setItemsPerRow(3)
-                .setSpacingColumn(50)
-                .setSpacingRow(20)
-                .addItem("d_Shares", 1)
-                .addItem("d_Likes", 1)
-                .addItem("d_Commments", 1)
-                ;
-
-  strokeCheckbox = cp5.addCheckBox("strokeCheckbox")
-                .setPosition(x, (++counter)*rowHeight + logoHeight)
-                .setSize(20, 20)
-                .setItemsPerRow(3)
-                .setSpacingColumn(50)
-                .setSpacingRow(20)
-                .addItem("s_Shares", 1)
-                .addItem("s_Likes", 1)
-                .addItem("s_Commments", 1)
-                ;
-  angleCheckbox = cp5.addCheckBox("angleCheckbox")
-                .setPosition(x, (++counter)*rowHeight + logoHeight)
-                .setSize(20, 20)
-                .setItemsPerRow(3)
-                .setSpacingColumn(50)
-                .setSpacingRow(20)
-                .addItem("a_Shares", 1)
-                .addItem("a_Likes", 1)
-                .addItem("a_Commments", 1)
-                ;
-
-  
-// NEW COLUMN
-  x = x+colWidth;
-  counter = 0;
-  
-  
-  cp5.addTextlabel("HexLabel")
-  .setText("Pentagon Controls")
-  .setPosition(x, counter*rowHeight + logoHeight + 20);
-  
-  
-  cp5.addSlider("hexCenterSize")
-  .setRange(1, 144)
-  .setValue(hexCenterSize)
-  .setPosition(x, (++counter)*rowHeight + logoHeight)
-  .setSize(colWidth-textColWidth, 20)
-  .setCaptionLabel("Center Size (" + hexCenterSize + ")");
-  ;
-  
-  cp5.addToggle("isDrawingCenter")
-  .setPosition(x, (++counter)*rowHeight + logoHeight)
-  .setSize(20, 20)
-  .setCaptionLabel("Draw Center");
-  
-  cp5.addSlider("hexAlpha")
-  .setRange(0, 255)
-  .setValue(hexAlpha)
-  .setPosition(x, (++counter)*rowHeight + logoHeight)
-  .setSize(colWidth-textColWidth, 20)
-  .setCaptionLabel("Pentagon Alpha (" + hexAlpha + ")");
-  ;
-  
 }
 
 void controlEvent(ControlEvent theEvent) {
-  if(theEvent.isFrom(designRadioButton)) {
-    for(int i=0;i<theEvent.getGroup().getArrayValue().length;i++) {
-      designSwitchs[i] = int(theEvent.getGroup().getArrayValue()[i]);
-    }
-  }
-  if (theEvent.isFrom(diameterCheckbox)) {
-    int col = 0;
-    for (int i=0;i<diameterCheckbox.getArrayValue().length;i++) {
-      diameterSwitchs[i] = (int)diameterCheckbox.getArrayValue()[i];
-    } 
-  }
-  if (theEvent.isFrom(strokeCheckbox)) {
-    int col = 0;
-    for (int i=0;i<strokeCheckbox.getArrayValue().length;i++) {
-      strokeSwitchs[i] = (int)strokeCheckbox.getArrayValue()[i];
-    } 
-  }
-  if (theEvent.isFrom(angleCheckbox)) {
-    int col = 0;
-    for (int i=0;i<angleCheckbox.getArrayValue().length;i++) {
-      angleSwitchs[i] = (int)angleCheckbox.getArrayValue()[i];
-    } 
-  }
   if (theEvent.isFrom(loadList)) {
     if (theEvent.isGroup()) {
       // check if the Event was triggered from a ControlGroup
@@ -611,4 +300,223 @@ void controlEvent(ControlEvent theEvent) {
       println("event from controller : "+theEvent.getController().getValue()+" from "+theEvent.getController());
     }
   }
+}
+
+
+
+void randomSize() {
+  for (int i = 0; i < polyCount; i++){
+    pentSize[i] = random(100,200);
+  }
+}
+void growSize() {
+  for (int i = 0; i < polyCount; i++){
+    if (random(1) > .99) {
+      pentSize[i] += growthRate;
+    }
+  }
+}
+
+
+void createFragments() {
+  //define the original shapes
+  for (int i = 0; i < ss.length; i++){
+    ss[i] = new RPolygon(RPPent(pentSize[i]+baseDiameter, GOLDEN_ANGLE*i));
+    ss[i].setFill(color(50,50,50));
+  };
+  
+  // iterate over all the possible combinations of the original shapes to make fragments
+  for (int i = 0; i < fs.length; i++){
+    
+    // union then intersect
+    boolean isUnion = true;
+    fs[i] = new RPolygon();
+    for (int u = 0; u < polyCount; u++) {
+      if (combinationGate[i][u] == 1) {
+        if (isUnion) {
+          //union
+          fs[i] = fs[i].union(ss[u]);
+          
+          isUnion = false;
+        } else if (fs[i].countContours() != 0) {
+          //intersect
+            try {
+              fs[i] = fs[i].intersection(ss[u]);
+            } 
+            catch (Exception e) {
+              fs[i] = new RPolygon();
+            }
+        }
+      }
+    }
+
+    // difference
+    for (int j = 0; j < polyCount; j++) {
+      if (combinationGate[i][j] == 0 && fs[i].countContours() != 0) {
+//          println("i = " +i + " and j = " + j);
+          fs[i] = fs[i].diff(ss[j]);
+      }
+    }
+    
+    fs[i].setFill(multiply(combinationGate[i]));
+// now doing a fixed applied alpha color from applyAlpha();
+//    if (int_array_sum(combinationGate[i]) == 1) {
+//      fs[i].setAlpha(alphaAmount);
+//    } else {
+//      fs[i].setAlpha(255);
+//    }
+  }
+}
+
+//**************
+//** MULTIPLY **
+//**************
+
+color multiply(int[] colors) {
+  color tempColor = color(0);
+  boolean blending = false;
+  for (int i=0; i < colors.length; i++) {
+    if (colors[i] == 1) {
+      if (blending) {
+        tempColor = multiply(tempColor, baseColors[i]);
+      } else {
+        tempColor = applyAlpha(baseColors[i], alphaAmount);
+        blending = true;
+      }
+    }
+  }
+  return tempColor;
+}
+
+
+color multiply(color c1, color c2) {
+  int[] returnColor = new int[3];
+  returnColor[0] = floor(red(c1) * red(c2) / 255);
+  returnColor[1] = floor(green(c1) * green(c2) / 255);
+  returnColor[2] = floor(blue(c1) * blue(c2) / 255);
+  return color(returnColor[0], returnColor[1], returnColor[2]);
+}
+
+
+
+//***********
+//** ALPHA **
+//***********
+
+color applyAlpha(color c1, int a) {
+  int[] returnColor = new int[3];
+  float opacity = float(a) / 255;
+  returnColor[0] = floor(red(c1) * opacity + (1-opacity)*255);
+  returnColor[1] = floor(green(c1) * opacity + (1-opacity)*255);
+  returnColor[2] = floor(blue(c1) * opacity + (1-opacity)*255);
+  return color(returnColor[0], returnColor[1], returnColor[2]);
+}
+
+//*******************
+//** DRAW RPOLYGON **
+//*******************
+
+RPolygon RPPent(float d, float startAngle)
+{
+  return RPPolygon(5, d, d, startAngle);
+}
+
+RPolygon RPPolygon(int n, float w, float h, float startAngle)
+{
+  RPolygon RPtemp = new RPolygon();
+  if (n > 2) {
+    float angle = TWO_PI/ n;
+  
+    /* The horizontal "radius" is one half the width;
+       The vertical "radius" is one half the height */
+    w = w / 2.0;
+    h = h / 2.0;
+    
+    beginShape();
+    for (int i = 0; i < n; i++)
+    {
+      RPtemp.addPoint(cos(startAngle)*w*cos(radians(36)) + w * cos(startAngle + angle * i),
+        sin(startAngle)*h*cos(radians(36)) + h * sin(startAngle + angle * i));
+    }
+    RPtemp.addClose();
+  }
+  return RPtemp;
+}
+
+
+//************
+//** COMBO ***
+//************
+
+void int_array_recurse(int depth) {
+  int[] int_rest = new int[depth];
+  int[] int_active = new int[depth];
+  for(int i = 0; i < depth; i++) {
+    int_rest[i] = 1;
+  }
+   pentRecurseCount = 0;
+  int_array_recurse(int_active, int_rest);
+  combinationGate = new int[ fragmentCount][depth];
+  int[] sec_rest = new int[depth];
+  int[] sec_active = new int[depth];
+   pentRecurseCount = 0;
+  int_array_recurse(int_active, int_rest);
+}
+
+void int_array_recurse(int[] active, int[] rest) {
+    if (int_array_sum(rest) == 0) {
+      if(int_array_sum(active) != 0) {
+        if ( fragmentCount != 0) {
+          combinationGate[ pentRecurseCount] = active;
+        }
+         pentRecurseCount++;
+      } else {
+        if ( fragmentCount == 0) {
+           fragmentCount =  pentRecurseCount;
+        }
+      }
+    } else {
+      int_array_recurse(int_array_add_next(active,rest), int_array_sub_next(rest));
+      int_array_recurse(active, int_array_sub_next(rest));
+    }
+}
+
+int int_array_sum(int[] subject) {
+  int sum = 0;
+  for (int i = 0; i < subject.length; i++) {
+    sum += subject[i];
+  }
+  return sum;
+}
+
+int[] int_array_add_next(int[] subject, int[] next) {
+  int int_length = next.length;
+  int[] temp = new int[int_length];
+  arrayCopy(subject, temp);
+  int i = 0;
+  while (i < int_length) {
+    if (next[i] == 1) {
+      temp[i] = 1;
+      i = int_length;
+    } else {
+      i++;
+    }
+  }
+  return temp;
+}
+
+int[] int_array_sub_next(int[] next) {
+  int int_length = next.length;
+  int[] temp = new int[int_length];
+  arrayCopy(next, temp);
+  int i = 0;
+  while (i < int_length) {
+    if (temp[i] == 1) {
+      temp[i] = 0;
+      i = int_length;
+    } else {
+      i++;
+    }
+  }
+  return temp;
 }
