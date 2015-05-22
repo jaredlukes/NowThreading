@@ -1,7 +1,6 @@
 //****************
 //* REQUIRED LIB *
 //****************
-
 import geomerative.*;
 
 import controlP5.*;
@@ -76,7 +75,7 @@ color sc5 = color(95,99,105);
 
 color[] baseColors = {sc1, sc2, sc3, sc4, sc5, sc1, sc2, sc3};
 
-int growthRate = 5;
+int growthRate = 1;
 
 //************
 
@@ -133,10 +132,7 @@ void draw() {
   pushMatrix();
   translate(logoHeight/2, logoHeight/2);
   
-  for (int i = 0; i < ss.length; i++){
-    ss[i].setStroke(false);
-    ss[i].draw();
-  };
+
 
   fs[2].draw();
   for (int i = 0; i < fs.length; i++){
@@ -393,7 +389,7 @@ void createFragments() {
           fs[i] = fs[i].diff(ss[j]);
       }
     }
-    
+    fs[i].update();
     fs[i].setFill(multiply(combinationGate[i]));
 // now doing a fixed applied alpha color from applyAlpha();
 //    if (int_array_sum(combinationGate[i]) == 1) {
@@ -629,4 +625,11 @@ void drawHexDesign() {
   popMatrix();
 }
 */
+void keyPressed() {
+  if (key == 'P') {
+//      saveFrame("/Volumes/LogoRaw/logo_master_ert.png");
+      saveFrame("logo_master.png");
 
+  }
+//  exit();
+} 
