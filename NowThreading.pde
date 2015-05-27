@@ -33,7 +33,7 @@ CheckBox angleCheckbox;
 DropdownList loadList;
 
 boolean isDrawingAxis = false;             // Draw helper Axis?
-boolean isControlers = true;               // Draw contorlers
+boolean isControlers = false;               // Draw contorlers
 
 PImage controlBG;
 
