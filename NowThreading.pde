@@ -14,9 +14,8 @@ ControlP5 cp5;
 //PShape logo;                               // The Logo
 
 PImage logo;                               // The Logo as a png
-
 int logoHeight = 1223;                      // The Logo height
-int logoWidth = 2550;                      // The Logo Width
+int logoWidth = 1223;                      // The Logo Width
 float hyperbolicSizeMultiplier;            // Max Size
 float hyperbolicMultiplier = 3.333;          // Max Size .01
 final float GOLDEN = 1.618033988;          // Golden Ratio
@@ -25,9 +24,9 @@ int baseDiameter = 1000;                      // The Base Radius of the Data Obj
 int baseStroke = 7;                        // The Base stroke of the Data Objects
 float basePadding = .1;
 float baseMargin = .1;
-
-
 PGraphics logoG;
+
+boolean outputImages = true;
 
 //************
 //* DEV VARS *
@@ -49,7 +48,7 @@ PImage controlBG;
 
 String dataBaseURL = "http://nowthreading.com/api/";
 JSONArray recipes;                                    // Recipes holds the data
-String[] loadSwitchs = {"threads-01.json", 
+String[] loadSwitchs = {"threads-03.json", 
                         "threads-02.json", 
                         "threads-03.json"};           // What data do we want to use
 int recipesSize;                                      // Commonly used count of recipes
@@ -110,7 +109,7 @@ void setup() {
   RG.setPolygonizer(RG.ADAPTATIVE);
   
 //  logo = loadShape("ThreadLogo.svg");                  // Load the logo
-  logo = loadImage("ThreadLogo.png");                  // Load the logo
+//  logo = loadImage("ThreadLogo.png");                  // Load the logo
   if (isControlers) {
     controlBG = loadImage("d2-placeholder-1920.png");
   }
@@ -128,20 +127,17 @@ void setup() {
 }
 
 void draw() {
-  background(255);    // White wash scene
+  
+  background(128);    // White wash scene
 
   growSize();
   createFragments();
   
-  
   logoG.beginDraw();
-//  logoG.shape(logo, 0, 0);  // Draw Logo into alpha graphic
   logoG.pushMatrix();
+  logoG.smooth(8);
   logoG.translate(logoHeight/2, logoHeight/2);
   
-
-
-//  fs[2].draw();  // Turned off, no idea what this is doing
   for (int i = 0; i < fs.length; i++){
     fs[i].setStroke(false);
     if(fs[i].countContours() > 0) {
@@ -168,12 +164,11 @@ void draw() {
   
   logoG.popMatrix();
   logoG.endDraw();
+  if (outputImages) {
+    logoG.save("../logo_output/mark_master.png");
+  }
   
-  logoG.save("../logo_output/mark_master.png");
-  
-  logoG.image(logo, 0, 0);
-//  image(logoG,0, 0);
-//  logoG.dispose();
+//  logoG.image(logo, 0, 0);
   
   if (isDrawingAxis) { // Draw helper Axis?
     stroke(0);
@@ -197,8 +192,14 @@ void draw() {
     strokeWeight(1);
     line(0, logoHeight, logoWidth, logoHeight);
   }
-  logoG.save("../logo_output/logo_master.png");
-  exit();
+  
+  if (outputImages) {
+//    logoG.save("../logo_output/logo_master.png");  // No longer adding the logotype
+    exit();
+  } else {
+    image(logoG,0, 0);
+    logoG.dispose();
+  }
 
 }
 
@@ -418,7 +419,7 @@ void createFragments() {
     }
     fs[i].update();
     fs[i].setFill(multiply(combinationGate[i]));
-// now doing a fixed applied alpha color from applyAlpha();
+    // now doing a fixed applied alpha color from applyAlpha();
     if (int_array_sum(combinationGate[i]) == 1) {
       fs[i].setAlpha(alphaAmount);
     } else {
