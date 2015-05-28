@@ -23,6 +23,9 @@ int baseStroke = 4;                        // The Base stroke of the Data Object
 float basePadding = .1;
 float baseMargin = .1;
 
+
+PGraphics logoG;
+
 //************
 //* DEV VARS *
 //************
@@ -61,7 +64,7 @@ int alphaAmount = 64;          // Was 102
 //super RPolygon
 
 int polyCount = 5;  //MAX 8
-
+ 
 int[] rawSize = new int[polyCount];
 float[] pentSize = new float[polyCount];
 RPolygon[] ss = new RPolygon[polyCount];  //Original Shapes
@@ -94,9 +97,11 @@ void setup() {
   } else {
     size(logoWidth,logoHeight);
   }
-  background(255);
+  //background(255, 0);
+  logoG = createGraphics(width,height);
   smooth(8);
-  frameRate(30);
+//  frameRate(30);
+  noLoop();
   
   RG.init(this);
   RG.setPolygonizer(RG.ADAPTATIVE);
@@ -120,34 +125,48 @@ void setup() {
 
 void draw() {
   background(255);    // White wash scene
-  shape(logo, 0, 0);  // Draw Logo
-  
-  
-  // Draw Pentagons
-//  initializePentegon();
+
   growSize();
   createFragments();
   
   
-  pushMatrix();
-  translate(logoHeight/2, logoHeight/2);
+  logoG.beginDraw();
+  logoG.shape(logo, 0, 0);  // Draw Logo into alpha graphic
+  logoG.pushMatrix();
+  logoG.translate(logoHeight/2, logoHeight/2);
   
 
 
-  fs[2].draw();
+//  fs[2].draw();  // Turned off, no idea what this is doing
   for (int i = 0; i < fs.length; i++){
     fs[i].setStroke(false);
-    fs[i].draw();
+    if(fs[i].countContours() > 0) {
+      try {
+        fs[i].draw(logoG);
+      } 
+      catch (Exception e) {
+        println(i);
+      }
+    }
   };
   
   for (int i = 0; i < ss.length; i++){
+    
+    // if statement for testing, remove later
     ss[i].setStroke(color(255,255,255));
     ss[i].setStrokeAlpha(255);
     ss[i].setStrokeWeight(baseStroke);
     ss[i].setFill(false);
-    ss[i].draw();
+    
+    ss[i].draw(logoG);
+    
   };
-  popMatrix();
+  
+  logoG.popMatrix();
+  
+  logoG.endDraw();
+  image(logoG,0, 0);
+//  logoG.dispose();
   
   if (isDrawingAxis) { // Draw helper Axis?
     stroke(0);
@@ -171,6 +190,7 @@ void draw() {
     strokeWeight(1);
     line(0, logoHeight, logoWidth, logoHeight);
   }
+  logoG.save("alphatest.png");
 }
 
 //********
@@ -628,7 +648,8 @@ void drawHexDesign() {
 void keyPressed() {
   if (key == 'P') {
 //      saveFrame("/Volumes/LogoRaw/logo_master_ert.png");
-      saveFrame("logo_master.png");
+//      saveFrame("logo_master.png");
+        logoG.save("alphatest.png");
 
   }
 //  exit();
