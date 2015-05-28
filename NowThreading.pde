@@ -11,15 +11,18 @@ ControlP5 cp5;
 //* GLOBALS *
 //***********
 
-PShape logo;                               // The Logo
-int logoHeight = 460;                      // The Logo height
-int logoWidth = 1080;                      // The Logo Width
+//PShape logo;                               // The Logo
+
+PImage logo;                               // The Logo as a png
+
+int logoHeight = 1223;                      // The Logo height
+int logoWidth = 2550;                      // The Logo Width
 float hyperbolicSizeMultiplier;            // Max Size
 float hyperbolicMultiplier = 3.333;          // Max Size .01
 final float GOLDEN = 1.618033988;          // Golden Ratio
 final float GOLDEN_ANGLE = GOLDEN*TWO_PI;  // Golden Ratio as Angle
-int baseDiameter = 0;                      // The Base Radius of the Data Objects
-int baseStroke = 4;                        // The Base stroke of the Data Objects
+int baseDiameter = 1000;                      // The Base Radius of the Data Objects
+int baseStroke = 7;                        // The Base stroke of the Data Objects
 float basePadding = .1;
 float baseMargin = .1;
 
@@ -99,18 +102,19 @@ void setup() {
   }
   //background(255, 0);
   logoG = createGraphics(width,height);
-  smooth(8);
+//  smooth(8);
 //  frameRate(30);
   noLoop();
   
   RG.init(this);
   RG.setPolygonizer(RG.ADAPTATIVE);
   
-  logo = loadShape("ThreadLogo.svg");                  // Load the logo
+//  logo = loadShape("ThreadLogo.svg");                  // Load the logo
+  logo = loadImage("ThreadLogo.png");                  // Load the logo
   if (isControlers) {
     controlBG = loadImage("d2-placeholder-1920.png");
   }
-  initControls();
+//  initControls();
   
   hyperbolicSizeMultiplier = logoHeight/PI;            // The max size is half the height
   getThreads();                                        // Get Data
@@ -131,7 +135,7 @@ void draw() {
   
   
   logoG.beginDraw();
-  logoG.shape(logo, 0, 0);  // Draw Logo into alpha graphic
+//  logoG.shape(logo, 0, 0);  // Draw Logo into alpha graphic
   logoG.pushMatrix();
   logoG.translate(logoHeight/2, logoHeight/2);
   
@@ -163,9 +167,12 @@ void draw() {
   };
   
   logoG.popMatrix();
-  
   logoG.endDraw();
-  image(logoG,0, 0);
+  
+  logoG.save("../logo_output/mark_master.png");
+  
+  logoG.image(logo, 0, 0);
+//  image(logoG,0, 0);
 //  logoG.dispose();
   
   if (isDrawingAxis) { // Draw helper Axis?
@@ -190,7 +197,9 @@ void draw() {
     strokeWeight(1);
     line(0, logoHeight, logoWidth, logoHeight);
   }
-  logoG.save("alphatest.png");
+  logoG.save("../logo_output/logo_master.png");
+  exit();
+
 }
 
 //********
@@ -388,7 +397,6 @@ void createFragments() {
         if (isUnion) {
           //union
           fs[i] = fs[i].union(ss[u]);
-          
           isUnion = false;
         } else if (fs[i].countContours() != 0) {
           //intersect
@@ -405,18 +413,17 @@ void createFragments() {
     // difference
     for (int j = 0; j < polyCount; j++) {
       if (combinationGate[i][j] == 0 && fs[i].countContours() != 0) {
-//          println("i = " +i + " and j = " + j);
           fs[i] = fs[i].diff(ss[j]);
       }
     }
     fs[i].update();
     fs[i].setFill(multiply(combinationGate[i]));
 // now doing a fixed applied alpha color from applyAlpha();
-//    if (int_array_sum(combinationGate[i]) == 1) {
-//      fs[i].setAlpha(alphaAmount);
-//    } else {
-//      fs[i].setAlpha(255);
-//    }
+    if (int_array_sum(combinationGate[i]) == 1) {
+      fs[i].setAlpha(alphaAmount);
+    } else {
+      fs[i].setAlpha(255);
+    }
   }
 }
 
@@ -432,7 +439,12 @@ color multiply(int[] colors) {
       if (blending) {
         tempColor = multiply(tempColor, baseColors[i]);
       } else {
-        tempColor = applyAlpha(baseColors[i], alphaAmount);
+        // used to bake the alpha
+//        tempColor = applyAlpha(baseColors[i], alphaAmount);
+
+        // used if outer pedals have alpha
+        tempColor = baseColors[i];
+
         blending = true;
       }
     }
@@ -645,12 +657,10 @@ void drawHexDesign() {
   popMatrix();
 }
 */
-void keyPressed() {
-  if (key == 'P') {
-//      saveFrame("/Volumes/LogoRaw/logo_master_ert.png");
-//      saveFrame("logo_master.png");
-        logoG.save("alphatest.png");
-
-  }
-//  exit();
-} 
+//void keyPressed() {
+//  if (key == 'P') {
+////      logoG.save("/Volumes/LogoRaw/logo_master_ert.png");
+//        logoG.save("alphatest.png");
+//
+//  }
+//} 
