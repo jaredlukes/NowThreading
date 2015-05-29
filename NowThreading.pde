@@ -48,7 +48,7 @@ PImage controlBG;
 
 String dataBaseURL = "http://nowthreading.com/api/";
 JSONArray recipes;                                    // Recipes holds the data
-String[] loadSwitchs = {"threads-03.json", 
+String[] loadSwitchs = {"threads-01.json", 
                         "threads-02.json", 
                         "threads-03.json"};           // What data do we want to use
 int recipesSize;                                      // Commonly used count of recipes
